@@ -1,0 +1,3 @@
+
+export COMMON_INTEGRAL_SOFTDIR=$HOME/software/
+
