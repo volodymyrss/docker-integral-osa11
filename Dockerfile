@@ -210,10 +210,26 @@ RUN sh install_osa11_update.sh '^j_.*'
 #test-jemx_image
 
 
-ADD init.sh init.sh
 
 
 USER root
-RUN mkdir -pv /data/rep_base_prod/aux /data/ic_tree_current/ic /data/ic_tree_current/idx /data/resources /data/rep_base_prod/cat && \
-    chown -R integral:integral /data/rep_base_prod/aux /data/ic_tree_current/ic /data/ic_tree_current/idx /data/resources /data/rep_base_prod/cat
+RUN mkdir -pv /data/rep_base_prod/aux /data/ic_tree_current/ic /data/ic_tree_current/idx /data/resources /data/rep_base_prod/cat /data/rep_base_prod/ic /data/rep_base_prod/idx && \
+    chown -R integral:integral /data/rep_base_prod/aux /data/ic_tree_current/ic /data/ic_tree_current/idx /data/resources /data/rep_base_prod/cat /data/rep_base_prod/ic /data/rep_base_prod/idx
 USER integral
+    
+RUN pip install git+ssh://git@github.com/volodymyrss/data-analysis.git@44266de --upgrade 
+RUN git clone git@github.com:volodymyrss/osa-templates-all.git && \
+    source /home/integral/osa10.2_init.sh && \
+    cp -rf osa-templates-all/* $CFITSIO_INCLUDE_FILES/
+
+ADD init.sh init.sh
+
+USER root
+RUN su - -c 'yum install -y redhat-lsb'
+USER integral
+
+RUN platform=`lsb_release -is`_`lsb_release -sr`_`uname -i` && \
+    cd /home/integral/osa && \
+    tar cvzf /home/integral/osa11-${platform}.tar.gz * && \
+    ls -lotr
+

@@ -29,13 +29,19 @@ echo "mounting.."
 
 sshfs savchenk@isdc-nx01.isdc.unige.ch:/isdc/arc/rev_3/scw /data/rep_base_prod/scw -o IdentityFile=$PWD/keys/datakey -o nonempty -o StrictHostKeyChecking=no
 sshfs savchenk@isdc-nx01.isdc.unige.ch:/isdc/arc/rev_3/aux /data/rep_base_prod/aux -o IdentityFile=$PWD/keys/datakey -o nonempty -o StrictHostKeyChecking=no
-sshfs savchenk@isdc-nx01.isdc.unige.ch:/isdc/arc/rev_3/ic /data/ic_tree_current/ic -o IdentityFile=$PWD/keys/datakey -o nonempty -o StrictHostKeyChecking=no
-sshfs savchenk@isdc-nx01.isdc.unige.ch:/isdc/arc/rev_3/idx /data/ic_tree_current/idx -o IdentityFile=$PWD/keys/datakey -o nonempty -o StrictHostKeyChecking=no
 sshfs savchenk@isdc-nx01.isdc.unige.ch:/isdc/arc/rev_3/cat /data/rep_base_prod/cat -o IdentityFile=$PWD/keys/datakey -o nonempty -o StrictHostKeyChecking=no
+sshfs savchenk@isdc-nx01.isdc.unige.ch:/home/isdc/savchenk/osa11_deployment/deployment/ic/ic /data/ic_tree_current/ic -o IdentityFile=$PWD/keys/datakey -o nonempty -o StrictHostKeyChecking=no
+sshfs savchenk@isdc-nx01.isdc.unige.ch:/home/isdc/savchenk/osa11_deployment/deployment/ic/idx /data/ic_tree_current/idx -o IdentityFile=$PWD/keys/datakey -o nonempty -o StrictHostKeyChecking=no
+sshfs savchenk@isdc-nx01.isdc.unige.ch:/home/isdc/savchenk/osa11_deployment/deployment/ic/ic /data/rep_base_prod/ic -o IdentityFile=$PWD/keys/datakey -o nonempty -o StrictHostKeyChecking=no
+sshfs savchenk@isdc-nx01.isdc.unige.ch:/home/isdc/savchenk/osa11_deployment/deployment/ic/idx /data/rep_base_prod/idx -o IdentityFile=$PWD/keys/datakey -o nonempty -o StrictHostKeyChecking=no
+#sshfs savchenk@isdc-nx01.isdc.unige.ch:/isdc/arc/rev_3/ic /data/ic_tree_current/ic -o IdentityFile=$PWD/keys/datakey -o nonempty -o StrictHostKeyChecking=no
+#sshfs savchenk@isdc-nx01.isdc.unige.ch:/isdc/arc/rev_3/idx /data/ic_tree_current/idx -o IdentityFile=$PWD/keys/datakey -o nonempty -o StrictHostKeyChecking=no
 
 
 
 ls /data/rep_base_prod/scw/0665
+
+ls -l /data/ic_tree_current/ic/ibis/mod/isgr_mask_mod_0003.fits
 
 #sshuttle -D  -r savchenk@86.119.32.161 192.168.0.0/24 86.119.34.63 
 

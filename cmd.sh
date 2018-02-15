@@ -7,4 +7,4 @@ export REP_BASE_NRT=/data/rep_base_prod_nrt
 
 cd /home/integral/
 
-bash rundda.py ii_skyimage -m git://ddosa -m git://ddosa11
+bash 
