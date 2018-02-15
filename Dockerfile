@@ -230,6 +230,8 @@ USER integral
 
 RUN platform=`lsb_release -is`_`lsb_release -sr`_`uname -i` && \
     cd /home/integral/osa && \
-    tar cvzf /home/integral/osa11-${platform}.tar.gz * && \
-    ls -lotr
+    package=osa11-${platform}.tar.gz && \
+    tar cvzf /home/integral/$package * && \
+    ls -lotr && \
+    echo $package > /home/integral/package_list.txt
 
