@@ -228,10 +228,13 @@ USER root
 RUN su - -c 'yum install -y redhat-lsb'
 USER integral
 
+RUN cp -rv /home/integral/root /home/integral/osa/
+
 RUN platform=`lsb_release -is`_`lsb_release -sr`_`uname -i` && \
-    cd /home/integral/osa && \
+    cd /home/integral/ && \
+    mv osa osa11 && \
     package=osa11-${platform}.tar.gz && \
-    tar cvzf /home/integral/$package * && \
+    tar cvzf /home/integral/$package osa11 && \
     ls -lotr && \
     echo $package > /home/integral/package_list.txt
 
