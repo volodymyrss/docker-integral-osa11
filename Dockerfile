@@ -41,6 +41,8 @@ RUN pyenv rehash
 
 # basic
 
+RUN pip install pip --upgrade
+RUN pip install future
 RUN pip install numpy scipy astropy matplotlib
 
 ## build heasoft
@@ -98,18 +100,14 @@ USER integral
 
 
 RUN pip install --upgrade pip  && \
+    pip install pyyaml luigi pandas jupyter pytest nose sshuttle && \
     pip install git+ssh://git@github.com/volodymyrss/pilton.git@504e245 -U && \
-    pip install git+ssh://git@github.com/volodymyrss/data-analysis.git@332d51a -U && \
-    pip install git+ssh://git@github.com/volodymyrss/dda-ddosadm.git -U && \
-    pip install git+ssh://git@github.com/volodymyrss/dda-ddosa.git@7c45922 -U && \
     pip install git+ssh://git@github.com/volodymyrss/heaspa.git -U && \
     pip install git+ssh://git@github.com/volodymyrss/headlessplot.git && \
     pip install git+ssh://git@github.com/volodymyrss/dlogging.git@6df5b37 --upgrade && \
-    pip install pyyaml luigi pandas jupyter pytest nose sshuttle && \
     pip install git+ssh://git@github.com/volodymyrss/restddosaworker.git@04cd7f1 && \
     pip install git+ssh://git@github.com/volodymyrss/dda-sdsc.git@29b0bdf && \
-    pip install git+ssh://git@github.com/volodymyrss/data-analysis.git@90cc924     --upgrade && \
-    pip install git+ssh://git@github.com/volodymyrss/dda-ddosa    --upgrade
+    pip install git+ssh://git@github.com/volodymyrss/data-analysis.git@90cc924     --upgrade
 
 
 # prep OSA
@@ -156,14 +154,6 @@ RUN wget https://root.cern.ch/download/root_v5.34.26.Linux-slc6_amd64-gcc4.4.tar
     rm -f root_v5.34.26.Linux-slc6_amd64-gcc4.4.tar.gz 
 
 
-#RUN wget https://root.cern.ch/download/root_v5.34.26.Linux-slc6_amd64-gcc4.8.tar.gz && \
-#    tar xvzf root_v5.34.26.Linux-slc6_amd64-gcc4.8.tar.gz
-
-#RUN mkdir -p /home/integral/ && \
-#    cd /home/integral/ && \
-#    wget https://root.cern.ch/download/root_v5.34.34.source.tar.gz && \
-#    tar xvzf root_v5.34.34.source.tar.gz  && \
-
 #RUN mkdir -p /home/integral/ && \
 #    cd /home/integral/ && \
 #    wget https://root.cern.ch/download/root_v5.34.34.source.tar.gz && \
@@ -172,7 +162,6 @@ RUN wget https://root.cern.ch/download/root_v5.34.26.Linux-slc6_amd64-gcc4.4.tar
 #    ./configure  && \
 #    make
     
-
 
 #ADD g95-x86_64-64-linux.tgz g95-x86_64-64-linux
 
@@ -190,51 +179,12 @@ ADD osa10.2_init.sh osa10.2_init.sh
 #ADD install_common_integral_software_ii.sh install_common_integral_software_ii.sh
 #RUN bash install_common_integral_software_ii.sh
 
-RUN git clone git@github.com:volodymyrss/osa-builder.git && \
-    cd osa-builder
-
-RUN pip install termcolor
-RUN sudo su - -c 'yum install -y colordiff'
-
-ADD install_osa11_update.sh install_osa11_update.sh
-RUN sh install_osa11_update.sh dal3ibis
-RUN sh install_osa11_update.sh '^ibis_.*'
-RUN sh install_osa11_update.sh '^ii_.*'
-RUN sh install_osa11_update.sh '^spe_pick'
-RUN sh install_osa11_update.sh '^barycent'
-RUN sh install_osa11_update.sh '^j_.*'
-#rmf-templates
-#templates-all
-#test-ibis_isgr_energy
-#test-ii_shadow_build
-#test-jemx_image
-
-
-
-
 USER root
 RUN mkdir -pv /data/rep_base_prod/aux /data/ic_tree_current/ic /data/ic_tree_current/idx /data/resources /data/rep_base_prod/cat /data/rep_base_prod/ic /data/rep_base_prod/idx && \
     chown -R integral:integral /data/rep_base_prod/aux /data/ic_tree_current/ic /data/ic_tree_current/idx /data/resources /data/rep_base_prod/cat /data/rep_base_prod/ic /data/rep_base_prod/idx
 USER integral
     
 RUN pip install git+ssh://git@github.com/volodymyrss/data-analysis.git@44266de --upgrade 
-RUN git clone git@github.com:volodymyrss/osa-templates-all.git && \
-    source /home/integral/osa10.2_init.sh && \
-    cp -rf osa-templates-all/* $CFITSIO_INCLUDE_FILES/
 
 ADD init.sh init.sh
-
-USER root
-RUN su - -c 'yum install -y redhat-lsb'
-USER integral
-
-RUN cp -rv /home/integral/root /home/integral/osa/
-
-RUN platform=`lsb_release -is`_`lsb_release -sr`_`uname -i` && \
-    cd /home/integral/ && \
-    mv osa osa11 && \
-    package=osa11-${platform}.tar.gz && \
-    tar cvzf /home/integral/$package osa11 && \
-    ls -lotr && \
-    echo $package > /home/integral/package_list.txt
 
