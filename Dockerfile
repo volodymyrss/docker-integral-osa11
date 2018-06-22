@@ -1,4 +1,4 @@
-FROM centos
+FROM centos:6
 
 RUN yum -y install epel-release
 RUN yum -y update
@@ -31,32 +31,11 @@ WORKDIR /home/integral
 RUN git clone git://github.com/yyuu/pyenv.git .pyenv
 
 ENV HOME  /home/integral
-ENV PYENV_ROOT $HOME/.pyenv
-ENV PATH $PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH
-
-RUN export PYTHON_CONFIGURE_OPTS="--enable-shared" && pyenv install 2.7.12
-RUN pyenv global 2.7.12
-RUN pyenv rehash
 
 
-# basic
-
-RUN pip install numpy scipy astropy matplotlib
 
 ## build heasoft
 
-ENV LD_LIBRARY_PATH /home/integral/.pyenv/versions/2.7.12/lib/
-ENV LDFLAGS "-L/home/integral/.pyenv/versions/2.7.12/lib/"
-
-ARG heasoft_version=6.22.1
-ENV HEASOFT_VERSION $heasoft_version
-
-ADD heasoft_build.sh .
-RUN sh heasoft_build.sh
-
-RUN pip install git+https://git@github.com/volodymyrss/pilton.git
-
-ADD heasoft_init.sh .
 
 ## keys
 
@@ -97,19 +76,6 @@ RUN echo "integral ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 USER integral
 
 
-RUN pip install --upgrade pip  && \
-    pip install git+ssh://git@github.com/volodymyrss/pilton.git@504e245 -U && \
-    pip install git+ssh://git@github.com/volodymyrss/data-analysis.git@332d51a -U && \
-    pip install git+ssh://git@github.com/volodymyrss/dda-ddosadm.git -U && \
-    pip install git+ssh://git@github.com/volodymyrss/dda-ddosa.git@7c45922 -U && \
-    pip install git+ssh://git@github.com/volodymyrss/heaspa.git -U && \
-    pip install git+ssh://git@github.com/volodymyrss/headlessplot.git && \
-    pip install git+ssh://git@github.com/volodymyrss/dlogging.git@6df5b37 --upgrade && \
-    pip install pyyaml luigi pandas jupyter pytest nose sshuttle && \
-    pip install git+ssh://git@github.com/volodymyrss/restddosaworker.git@04cd7f1 && \
-    pip install git+ssh://git@github.com/volodymyrss/dda-sdsc.git@29b0bdf && \
-    pip install git+ssh://git@github.com/volodymyrss/data-analysis.git@90cc924     --upgrade && \
-    pip install git+ssh://git@github.com/volodymyrss/dda-ddosa    --upgrade
 
 
 # prep OSA
@@ -122,10 +88,6 @@ USER integral
 
 # additional software
 
-ADD common_integral_software_init.sh .
-
-ADD install_common_integral_software.sh .
-RUN bash install_common_integral_software.sh
 
 ADD osa10.2_preparedata.sh .
 
@@ -180,7 +142,8 @@ RUN wget https://root.cern.ch/download/root_v5.34.26.Linux-slc6_amd64-gcc4.4.tar
 #RUN cp g95-x86_64-64-linux/g95-install/bin/x86_64-unknown-linux-gnu-g95 /usr/bin/f95
 #USER integral
 
-RUN sudo su - -c 'yum install -y  compat-gcc-44 compat-gcc-44-c++ compat-gcc-44-c++.gfortran'
+RUN sudo su - -c 'yum install -y  gcc gcc-c++ gcc-gfortran'
+RUN gcc --version
 RUN sudo su - -c 'cp -fv /usr/bin/gfortran /usr/bin/g95'
 
 ADD install_osa102.sh install_osa102.sh
@@ -193,7 +156,6 @@ ADD osa10.2_init.sh osa10.2_init.sh
 RUN git clone git@github.com:volodymyrss/osa-builder.git && \
     cd osa-builder
 
-RUN pip install termcolor
 RUN sudo su - -c 'yum install -y colordiff'
 
 ADD install_osa11_update.sh install_osa11_update.sh
@@ -217,7 +179,6 @@ RUN mkdir -pv /data/rep_base_prod/aux /data/ic_tree_current/ic /data/ic_tree_cur
     chown -R integral:integral /data/rep_base_prod/aux /data/ic_tree_current/ic /data/ic_tree_current/idx /data/resources /data/rep_base_prod/cat /data/rep_base_prod/ic /data/rep_base_prod/idx
 USER integral
     
-RUN pip install git+ssh://git@github.com/volodymyrss/data-analysis.git@44266de --upgrade 
 RUN git clone git@github.com:volodymyrss/osa-templates-all.git && \
     source /home/integral/osa10.2_init.sh && \
     cp -rf osa-templates-all/* $CFITSIO_INCLUDE_FILES/
@@ -228,10 +189,13 @@ USER root
 RUN su - -c 'yum install -y redhat-lsb'
 USER integral
 
+RUN cp -rv /home/integral/root /home/integral/osa/
+
 RUN platform=`lsb_release -is`_`lsb_release -sr`_`uname -i` && \
-    cd /home/integral/osa && \
+    cd /home/integral/ && \
+    mv osa osa11 && \
     package=osa11-${platform}.tar.gz && \
-    tar cvzf /home/integral/$package * && \
+    tar cvzf /home/integral/$package osa11 && \
     ls -lotr && \
     echo $package > /home/integral/package_list.txt
 

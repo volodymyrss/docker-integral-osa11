@@ -4,7 +4,9 @@
 
 filter=${1:-'.*'}
 
+source $HOME/heasoft_init.sh
 source $HOME/osa10.2_init.sh 
+source $HOME/common_integral_software_init.sh
 
 builddir=${PWD}/build
 mkdir -pv ${builddir}
@@ -32,19 +34,19 @@ test-jemx_image
 HERE
 
 for component in `cat $builddir/osa11_components | egrep "$filter"`; do
-    (
-        mkdir -pv $component
-        cd $component
-        pwd
-        wget ftp://isdcarc.unige.ch/arc/FTP/arc_distr/OSA11_test/components/$component*.tar.gz
-        tar xvzf $component*tar.gz
-
-        $ISDC_ENV/ac_stuff/configure
-        pwd
-        ls -ltor
-        make && \
-        make install || exit 1
-    )
+    echo "will build $component"
+    cd $builddir
+    git clone git@github.com:volodymyrss/osa-${component}.git osa-${component}
+    cd osa-${component}
+    pwd
+    cat component.yaml
+    $HOME/osa-builder/component_templating.py patch dev || exit 1
+    $ISDC_ENV/ac_stuff/configure
+    pwd
+    ls -ltor
+    make && \
+    make install || exit 1
+    [ -s ${component}-version.sh ] && cp -fv ${component}-version.sh $ISDC_ENV/bin/
 done
 
 

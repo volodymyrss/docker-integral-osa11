@@ -8,8 +8,8 @@ builddir=${HOME}/build
 export F90=gfortran #f95
 export F95=gfortran #f95
 export F77=gfortran #f95
-export CC="gcc44" # -Df2cFortran"
-export CXX="g++44" # -Df2cFortran"
+export CC="gcc" # -Df2cFortran"
+export CXX="g++" # -Df2cFortran"
 source $HOME/root/bin/thisroot.sh
 
 export LDFLAGS=""

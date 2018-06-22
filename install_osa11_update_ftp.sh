@@ -4,7 +4,9 @@
 
 filter=${1:-'.*'}
 
+source $HOME/heasoft_init.sh
 source $HOME/osa10.2_init.sh 
+source $HOME/common_integral_software_init.sh
 
 builddir=${PWD}/build
 mkdir -pv ${builddir}
