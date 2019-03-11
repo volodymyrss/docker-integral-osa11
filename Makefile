@@ -1,7 +1,8 @@
-CONTAINER_NAME="volodymyrsavchenko/docker-integral-osa:osa11"
+CONTAINER_NAME="admin.reproducible.online/integral-osa11-3"
+USER_ID?=$(shell id -u)
 
 build: 
-	docker build -t $(CONTAINER_NAME) --build-arg uid=`id -u` .
+	docker build -t $(CONTAINER_NAME) --build-arg uid=$(USER_ID) .
 
 push: build
 	docker push $(CONTAINER_NAME)
@@ -9,7 +10,3 @@ push: build
 run: build
 	docker run --privileged --entrypoint=bash -it $(CONTAINER_NAME)
 
-artifact: build
-	package=`docker run --entrypoint bash volodymyrsavchenko/docker-integral-osa:osa11 -c 'cat package_list.txt'` && \
-	echo "package $${package}" && \
-        docker run --entrypoint bash volodymyrsavchenko/docker-integral-osa:osa11 -c 'cat `cat package_list.txt`' > ../artifacts/$${package}
