@@ -1,10 +1,16 @@
 #!/bin/bash
 
-cd /home/integral
+export WORKDIR=/scratch/$HOSTNAME/
+mkdir -pv $WORKDIR/tmp-home
+
+export HOME=$WORKDIR/tmp-home
 source /osa_init.sh
+export HOME=/home/integral
 
 source /heasoft_init.sh
 #sh setup_curlftpfs.sh
+
+cd /home/integral
 
 #cp -fvr  /data/resources /data/rep_base_prod/resources
 
@@ -25,8 +31,6 @@ for dev_package in /dev-packages/*; do
     echo "adding dev package: $PYTHONPATH"
 done
 
-export WORKDIR=/scratch/$HOSTNAME/
-mkdir -pv $WORKDIR
 cd $WORKDIR
 
 export PFILES="$PWD/pfiles;${PFILES##*;}"
