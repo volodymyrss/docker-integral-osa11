@@ -146,7 +146,7 @@ RUN pip install pyyaml luigi pandas jupyter pytest nose sshuttle && \
     pip install git+ssh://git@github.com/volodymyrss/dda-ddosadm.git -U && \
     pip install git+ssh://git@github.com/volodymyrss/dda-ddosa.git@7c45922 -U && \
     pip install git+ssh://git@github.com/volodymyrss/dlogging.git@6df5b37 --upgrade
-RUN pip install git+ssh://git@github.com/volodymyrss/restddosaworker.git@f19ccb --upgrade
+RUN pip install git+ssh://git@github.com/volodymyrss/restddosaworker.git@3e395e2 --upgrade
 RUN pip install git+ssh://git@github.com/volodymyrss/dqueue
 RUN git clone https://github.com/mtorromeo/mattersend.git && cd mattersend && pip install pyfakefs && pip install . 
 
@@ -183,4 +183,8 @@ USER integral
 
 ADD entrypoint.sh /home/integral/entrypoint.sh
 ENTRYPOINT /home/integral/entrypoint.sh
+
+RUN echo "export OSA_VERSION=$OSA_VERSION" >> /osa_init.sh
+RUN echo "export CONTAINER_COMMIT=$CONTAINER_COMMIT" >> /init.sh
+
 #ENV DDA_QUEUE /data/ddcache/queue
