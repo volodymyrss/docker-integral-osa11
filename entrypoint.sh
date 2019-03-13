@@ -31,7 +31,7 @@ cd $WORKDIR
 
 export PFILES="$PWD;${PFILES##*;}"
 
-ln -s /osa11  /home/integral/osa
+ln -s /osa  /home/integral/osa
 
 if [ "$mode" == "interface" ]; then
 #resttimesystem.sh > /host_var/log/resttimesystem.log 2>&1

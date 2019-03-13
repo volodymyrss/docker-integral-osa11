@@ -11,5 +11,5 @@ run-it: build
 	docker run --privileged --entrypoint=bash -it $(CONTAINER_NAME)
 
 run: build
-	docker run $(CONTAINER_NAME)
+	sh run.sh $(CONTAINER_NAME)
 

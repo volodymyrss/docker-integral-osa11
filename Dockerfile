@@ -16,19 +16,19 @@ RUN yum -y install gcc git curl make zlib-devel bzip2 bzip2-devel \
                    libXft-devel libXext-devel gcc-gfortran openssl-devel pcre-devel \
                    mesa-libGL-devel mesa-libGLU-devel glew-devel ftgl-devel mysql-devel \
                    fftw-devel cfitsio-devel graphviz-devel avahi-compat-libdns_sd-devel \
-                   libldap-dev python-devel libxml2-devel gsl-static
-RUN yum install -y  compat-gcc-44 compat-gcc-44-c++ compat-gcc-44-c++.gfortran
-RUN yum install -y colordiff
+                   libldap-dev python-devel libxml2-devel gsl-static \
+                   compat-gcc-44 compat-gcc-44-c++ compat-gcc-44-c++.gfortran \
+                   colordiff
+
 RUN cp -fv /usr/bin/gfortran /usr/bin/g95
 
 RUN ln -s /usr/lib64/libpcre.so.1 /usr/lib64/libpcre.so.0
-RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.rpm.sh | bash && yum -y install git-lfs
+#RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.rpm.sh | bash && yum -y install git-lfs
 
 ARG uid
 RUN groupadd -r integral -g $uid && useradd -u $uid -r -g integral integral && \
     mkdir /home/integral /data && \
     chown -R integral:integral /home/integral /data
-
 USER integral
 
 ## pyenv
@@ -47,7 +47,6 @@ RUN pyenv rehash
 
 
 # basic
-
 RUN pip install pip --upgrade
 RUN pip install future
 RUN pip install numpy scipy astropy matplotlib
@@ -71,20 +70,11 @@ RUN wget https://root.cern.ch/download/root_v5.34.26.Linux-slc6_amd64-gcc4.4.tar
 USER root
 RUN wget https://www.isdc.unige.ch/~savchenk/gitlab-ci/integral/build/osa-build-binary-tarball/CentOS_7.5.1804_x86_64/latest/build-latest/osa-11.0-3-g78d73880-20190124-105932-CentOS_7.5.1804_x86_64-tiny.tar.gz && \
     cd / && tar xvzf $OLDPWD/osa-11.0-3-g78d73880-20190124-105932-CentOS_7.5.1804_x86_64-tiny.tar.gz && \
-    rm -fv osa-11.0-3-g78d73880-20190124-105932-CentOS_7.5.1804_x86_64-tiny.tar.gz  
+    rm -fv osa-11.0-3-g78d73880-20190124-105932-CentOS_7.5.1804_x86_64-tiny.tar.gz && \
+    mv /osa11 /osa
 USER integral
 
 ADD osa_init.sh /osa_init.sh
-
-# additional software for OSA
-
-
-#ADD common_integral_software_init.sh /common_integral_software_init.sh
-
-#ADD install_common_integral_software.sh .
-#RUN bash install_common_integral_software.sh
-
-
 
 # prep OSA
 
@@ -95,7 +85,6 @@ RUN mkdir -pv /host_var; chown integral:integral /host_var &&  \
     mkdir -pv /data/rep_base_prod/aux /data/ic_tree_current/ic /data/ic_tree_current/idx /data/resources /data/rep_base_prod/cat /data/rep_base_prod/ic /data/rep_base_prod/idx && \
     chown -R integral:integral /data/rep_base_prod/aux /data/ic_tree_current/ic /data/ic_tree_current/idx /data/resources /data/rep_base_prod/cat /data/rep_base_prod/ic /data/rep_base_prod/idx
 USER integral
-
 
 
 # custom private python
@@ -109,7 +98,7 @@ ADD keys keys
 # duplication?
 USER root
 RUN mkdir -pv .ssh && chown -R integral:integral deploy-keys .ssh
-#RUN cp keys/id_rsa-sdsc /home/integral/.ssh/id_rsa && cp keys/id_rsa-sdsc.pub /home/integral/.ssh/id_rsa.pub && cp keys/known_hosts /home/integral/.ssh/
+RUN cp keys/id_rsa-sdsc /home/integral/.ssh/id_rsa && cp keys/id_rsa-sdsc.pub /home/integral/.ssh/id_rsa.pub && cp keys/known_hosts /home/integral/.ssh/
 RUN cp keys/id_rsa-osa11 /home/integral/.ssh/id_rsa && cp keys/id_rsa-osa11.pub /home/integral/.ssh/id_rsa.pub && cp keys/known_hosts /home/integral/.ssh/
 RUN chown integral:integral -Rv keys /home/integral/.ssh
 RUN chown -R integral:integral /home/integral/.ssh/ &&  \
@@ -120,28 +109,6 @@ USER integral
 
 
 
-
-
-#ADD secret-ddosa-server /home/integral/.secret-ddosa-server
-
-
-
-# dda service
-ENV EXPORT_SERVICE_PORT 5967
-ENV EXPORT_SERVICE_HOST 0.0.0.0
-EXPOSE $EXPORT_SERVICE_PORT
-
-
-# jupyter
-RUN mkdir -p /home/integral/.jupyter/
-ADD jupyter_notebook_config.json /home/integral/.jupyter/jupyter_notebook_config.json
-EXPOSE 8888
-
-
-
-ENV EXPORT_SERVICE_PORT 5691
-ENV EXPORT_SERVICE_HOST 0.0.0.0
-EXPOSE ${EXPORT_SERVICE_PORT}
 
 # additional software
 
@@ -162,32 +129,41 @@ RUN pip install logstash_formatter
 RUN pip install requests-unixsocket 
 RUN pip install pymysql
 RUN pip install peewee
+RUN pip install ruamel.yaml
 RUN git clone https://github.com/mtorromeo/mattersend.git && cd mattersend && pip install pyfakefs && pip install . 
 RUN pip install git+ssh://git@github.com/volodymyrss/restddosaworker.git@f8d5353  --upgrade
+RUN pip install git+ssh://git@github.com/volodymyrss/dqueue
 
-#ENV DDA_QUEUE /data/ddcache/queue
-
-
-
-#ADD get_docker_name.py /home/integral/get_docker_name.py
-#ADD netrc-integral-containers /home/integral/.netrc
 
 ARG dda_revision
 RUN pip install git+ssh://git@github.com/volodymyrss/data-analysis.git@$dda_revision --upgrade
 
+
+# dda service
+ENV EXPORT_SERVICE_PORT 5967
+ENV EXPORT_SERVICE_HOST 0.0.0.0
+EXPOSE $EXPORT_SERVICE_PORT
+
+
+# jupyter
+RUN mkdir -p /home/integral/.jupyter/
+EXPOSE 8888
+
+
 # access group
+ARG private_group=""
 USER root
-RUN groupadd data -g 4915
-RUN usermod integral -G data -a
+RUN  [ "$private_group" != "" ] && ( groupadd data -g 4915; usermod integral -G data -a) || echo 'not adding private group!'
 USER integral
 
 #USER root
 #RUN su - -c 'yum install netstat lsof -y'
 #USER integral
 
-ADD choose_proxy.sh /home/integral/choose_proxy.sh
+#ADD choose_proxy.sh /home/integral/choose_proxy.sh
 
-RUN rm -rf /home/integral/pfiles
+#RUN rm -rf /home/integral/pfiles
 
 ADD entrypoint.sh /home/integral/entrypoint.sh
 ENTRYPOINT /home/integral/entrypoint.sh
+#ENV DDA_QUEUE /data/ddcache/queue
