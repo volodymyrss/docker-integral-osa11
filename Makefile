@@ -7,7 +7,7 @@ PRIVATE_GROUP?=""
 CONTAINER_NAME="admin.reproducible.online/dda-worker-osa-$(OSA_VERSION)-g$(PRIVATE_GROUP)-$(DOCKER_COMMIT)"
 
 build: 
-	docker build -t $(CONTAINER_NAME) --build-arg uid=$(USER_ID) --build-arg OSA_VERSION=$(OSA_VERSION) --build-arg private_group=$(PRIVATE_GROUP) .
+	docker build -t $(CONTAINER_NAME) --build-arg uid=$(USER_ID) --build-arg OSA_VERSION=$(OSA_VERSION) --build-arg private_group=$(PRIVATE_GROUP) --build-arg dda_revision=$(DDA_REVISION) .
 	echo "built $(CONTAINER_NAME)"
 
 push: build

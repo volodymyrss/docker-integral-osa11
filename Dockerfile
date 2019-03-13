@@ -61,7 +61,8 @@ RUN wget https://www.isdc.unige.ch/~savchenk/gitlab-ci/savchenk/osa-build-heasof
 ADD heasoft_init.sh /heasoft_init.sh
 
 # root
-RUN wget https://root.cern.ch/download/root_v5.34.26.Linux-slc6_amd64-gcc4.4.tar.gz && \
+RUN cd / && \ 
+    wget https://root.cern.ch/download/root_v5.34.26.Linux-slc6_amd64-gcc4.4.tar.gz && \
     tar xvzf root_v5.34.26.Linux-slc6_amd64-gcc4.4.tar.gz && \
     rm -f root_v5.34.26.Linux-slc6_amd64-gcc4.4.tar.gz 
 
@@ -145,7 +146,7 @@ RUN pip install pyyaml luigi pandas jupyter pytest nose sshuttle && \
     pip install git+ssh://git@github.com/volodymyrss/dda-ddosadm.git -U && \
     pip install git+ssh://git@github.com/volodymyrss/dda-ddosa.git@7c45922 -U && \
     pip install git+ssh://git@github.com/volodymyrss/dlogging.git@6df5b37 --upgrade
-RUN pip install git+ssh://git@github.com/volodymyrss/restddosaworker.git@f8d5353 
+RUN pip install git+ssh://git@github.com/volodymyrss/restddosaworker.git 
 RUN pip install git+ssh://git@github.com/volodymyrss/dqueue
 RUN git clone https://github.com/mtorromeo/mattersend.git && cd mattersend && pip install pyfakefs && pip install . 
 

@@ -6,7 +6,7 @@ source /osa_init.sh
 source /heasoft_init.sh
 #sh setup_curlftpfs.sh
 
-cp -fvr  /data/resources /data/rep_base_prod/resources
+#cp -fvr  /data/resources /data/rep_base_prod/resources
 
 export COMMON_INTEGRAL_SOFTDIR=$HOME/software/
 export PYTHONUNBUFFERED=0
@@ -29,7 +29,9 @@ export WORKDIR=/scratch/$HOSTNAME/
 mkdir -pv $WORKDIR
 cd $WORKDIR
 
-export PFILES="$PWD;${PFILES##*;}"
+export PFILES="$PWD/pfiles;${PFILES##*;}"
+
+mkdir -pv $PWD/pfiles
 
 #ln -s /osa  /home/integral/osa
 
