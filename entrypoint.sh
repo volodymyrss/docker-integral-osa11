@@ -40,7 +40,7 @@ if [ "$WORKER_MODE" == "interface" ]; then
 #resttimesystem.sh > /host_var/log/resttimesystem.log 2>&1
     while true; do
         echo "interface worker starting"
-        DISPLAY="" python -m restddosaworker 2>&1 
+        DISPLAY="" python -m ddaworker.service 2>&1 
         echo "worker dead: restarting"
     done | tee -a /var/log/containers/${CONTAINER_NAME}
 else
