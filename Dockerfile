@@ -57,7 +57,6 @@ USER root
 RUN wget https://www.isdc.unige.ch/~savchenk/gitlab-ci/savchenk/osa-build-heasoft-binary-tarball/CentOS_7.5.1804_x86_64/heasoft-CentOS_7.5.1804_x86_64.tar.gz && \
     (cd /; tar xvzf $OLDPWD/heasoft-CentOS_7.5.1804_x86_64.tar.gz) && \
     rm -fv heasoft-CentOS_7.5.1804_x86_64.tar.gz
-USER integral
 
 ADD heasoft_init.sh /heasoft_init.sh
 
@@ -67,11 +66,28 @@ RUN wget https://root.cern.ch/download/root_v5.34.26.Linux-slc6_amd64-gcc4.4.tar
     rm -f root_v5.34.26.Linux-slc6_amd64-gcc4.4.tar.gz 
 
 # osa
-USER root
-RUN wget https://www.isdc.unige.ch/~savchenk/gitlab-ci/integral/build/osa-build-binary-tarball/CentOS_7.5.1804_x86_64/latest/build-latest/osa-11.0-3-g78d73880-20190124-105932-CentOS_7.5.1804_x86_64-tiny.tar.gz && \
-    cd / && tar xvzf $OLDPWD/osa-11.0-3-g78d73880-20190124-105932-CentOS_7.5.1804_x86_64-tiny.tar.gz && \
-    rm -fv osa-11.0-3-g78d73880-20190124-105932-CentOS_7.5.1804_x86_64-tiny.tar.gz && \
-    mv /osa11 /osa
+#USER root
+#RUN wget https://www.isdc.unige.ch/~savchenk/gitlab-ci/integral/build/osa-build-binary-tarball/CentOS_7.5.1804_x86_64/latest/build-latest/osa-11.0-3-g78d73880-20190124-105932-CentOS_7.5.1804_x86_64-tiny.tar.gz && \
+#    cd / && tar xvzf $OLDPWD/osa-11.0-3-g78d73880-20190124-105932-CentOS_7.5.1804_x86_64-tiny.tar.gz && \
+#    rm -fv osa-11.0-3-g78d73880-20190124-105932-CentOS_7.5.1804_x86_64-tiny.tar.gz && \
+#    mv /osa11 /osa
+
+ARG OSA_VERSION
+
+RUN cd / && \
+    if [ ${OSA_VERSION} == "10.2" ]; then \
+        wget https://www.isdc.unige.ch/integral/download/osa/sw/10.2/osa10.2-bin-linux64.tar.gz && \
+        tar xvzf osa10.2-bin-linux64.tar.gz && \
+        rm -fv osa10.2-bin-linux64.tar.gz && \
+        mv osa10.2 osa; \
+    else \
+        wget https://www.isdc.unige.ch/~savchenk/gitlab-ci/integral/build/osa-build-binary-tarball/CentOS_7.5.1804_x86_64/${OSA_VERSION}/build-latest/osa-${OSA_VERSION}-CentOS_7.5.1804_x86_64.tar.gz && \
+        tar xvzf osa-${OSA_VERSION}-CentOS_7.5.1804_x86_64.tar.gz && \
+        rm -fv osa-${OSA_VERSION}-CentOS_7.5.1804_x86_64.tar.gz && \
+        mv osa11 osa; \
+    fi
+
+
 USER integral
 
 ADD osa_init.sh /osa_init.sh
@@ -112,15 +128,7 @@ USER integral
 
 # additional software
 
-RUN pip install --upgrade pip  && \
-    pip install pyyaml luigi pandas jupyter pytest nose sshuttle && \
-    pip install git+ssh://git@github.com/volodymyrss/pilton.git@504e245 -U && \
-    pip install git+ssh://git@github.com/volodymyrss/heaspa.git -U && \
-    pip install git+ssh://git@github.com/volodymyrss/headlessplot.git && \
-    pip install git+ssh://git@github.com/volodymyrss/restddosaworker.git@04cd7f1 && \
-    pip install git+ssh://git@github.com/volodymyrss/dda-ddosadm.git -U && \
-    pip install git+ssh://git@github.com/volodymyrss/dda-ddosa.git@7c45922 -U && \
-    pip install git+ssh://git@github.com/volodymyrss/dlogging.git@6df5b37 --upgrade
+RUN pip install --upgrade pip  
 RUN pip install pyyaml
 RUN pip install logzio-python-handler
 RUN pip install numpy pandas  --upgrade
@@ -130,9 +138,16 @@ RUN pip install requests-unixsocket
 RUN pip install pymysql
 RUN pip install peewee
 RUN pip install ruamel.yaml
-RUN git clone https://github.com/mtorromeo/mattersend.git && cd mattersend && pip install pyfakefs && pip install . 
-RUN pip install git+ssh://git@github.com/volodymyrss/restddosaworker.git@f8d5353  --upgrade
+RUN pip install pyyaml luigi pandas jupyter pytest nose sshuttle && \
+    pip install git+ssh://git@github.com/volodymyrss/pilton.git@504e245 -U && \
+    pip install git+ssh://git@github.com/volodymyrss/heaspa.git -U && \
+    pip install git+ssh://git@github.com/volodymyrss/headlessplot.git && \
+    pip install git+ssh://git@github.com/volodymyrss/dda-ddosadm.git -U && \
+    pip install git+ssh://git@github.com/volodymyrss/dda-ddosa.git@7c45922 -U && \
+    pip install git+ssh://git@github.com/volodymyrss/dlogging.git@6df5b37 --upgrade
+RUN pip install git+ssh://git@github.com/volodymyrss/restddosaworker.git@f8d5353 
 RUN pip install git+ssh://git@github.com/volodymyrss/dqueue
+RUN git clone https://github.com/mtorromeo/mattersend.git && cd mattersend && pip install pyfakefs && pip install . 
 
 
 ARG dda_revision

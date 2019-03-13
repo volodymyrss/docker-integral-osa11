@@ -1,8 +1,13 @@
-CONTAINER_NAME="admin.reproducible.online/integral-osa11-3"
 USER_ID?=$(shell id -u)
+OSA_VERSION?=$(shell curl https://www.isdc.unige.ch/~savchenk/gitlab-ci/integral/build/osa-build-tarball/CentOS_7.5.1804_x86_64/latest/latest/osa-version-ref.txt)
+#OSA_VERSION_SHORT?=$(shell curl https://www.isdc.unige.ch/~savchenk/gitlab-ci/integral/build/osa-build-tarball/CentOS_7.5.1804_x86_64/latest/latest/osa-version-ref.txt | awk -F- '{print $$1,$$2,$$4}' OFS=-)
+PRIVATE_GROUP?=""
+
+CONTAINER_NAME="admin.reproducible.online/dda-worker-osa-$(OSA_VERSION)-$(PRIVATE_GROUP)pg"
 
 build: 
-	docker build -t $(CONTAINER_NAME) --build-arg uid=$(USER_ID) .
+	docker build -t $(CONTAINER_NAME) --build-arg uid=$(USER_ID) --build-arg OSA_VERSION=$(OSA_VERSION) --build-arg private_group=$(PRIVATE_GROUP) .
+	echo "built $(CONTAINER_NAME)"
 
 push: build
 	docker push $(CONTAINER_NAME)

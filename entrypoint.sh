@@ -18,7 +18,7 @@ export CONTAINER_NAME=$HOSTNAME
 
 [ "$MATTERMOST_CHANNEL" == "" ] || (echo "starting backend master $CONTAINER_NAME " | mattersend  -U `cat ~/.mattermost-hook` -c $MATTERMOST_CHANNEL)
 
-sh choose_proxy.sh
+#sh choose_proxy.sh
 
 for dev_package in /dev-packages/*; do
     export PYTHONPATH=$dev_package:$PYTHONPATH
@@ -31,9 +31,9 @@ cd $WORKDIR
 
 export PFILES="$PWD;${PFILES##*;}"
 
-ln -s /osa  /home/integral/osa
+#ln -s /osa  /home/integral/osa
 
-if [ "$mode" == "interface" ]; then
+if [ "$WORKER_MODE" == "interface" ]; then
 #resttimesystem.sh > /host_var/log/resttimesystem.log 2>&1
     while true; do
         DISPLAY="" python -m restddosaworker 2>&1 
