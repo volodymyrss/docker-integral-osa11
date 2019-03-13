@@ -5,10 +5,9 @@ mkdir -pv $WORKDIR/tmp-home
 
 export HOME=$WORKDIR/tmp-home
 source /osa_init.sh
-export HOME=/home/integral
-
 source /heasoft_init.sh
 #sh setup_curlftpfs.sh
+export HOME=/home/integral
 
 cd /home/integral
 
