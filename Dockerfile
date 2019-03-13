@@ -152,7 +152,8 @@ RUN git clone https://github.com/mtorromeo/mattersend.git && cd mattersend && pi
 
 
 ARG dda_revision
-RUN pip install git+ssh://git@github.com/volodymyrss/data-analysis.git@$dda_revision --upgrade
+RUN pip install git+ssh://git@github.com/volodymyrss/data-analysis.git@stable --upgrade
+#RUN pip install git+ssh://git@github.com/volodymyrss/data-analysis.git@$dda_revision --upgrade
 
 
 # dda service
