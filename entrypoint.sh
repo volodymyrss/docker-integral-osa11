@@ -33,14 +33,17 @@ export PFILES="$PWD;${PFILES##*;}"
 
 #ln -s /osa  /home/integral/osa
 
+echo "worker mode: $WORKER_MODE"
 if [ "$WORKER_MODE" == "interface" ]; then
 #resttimesystem.sh > /host_var/log/resttimesystem.log 2>&1
     while true; do
+        echo "interface worker starting"
         DISPLAY="" python -m restddosaworker 2>&1 
         echo "worker dead: restarting"
     done | tee -a /var/log/containers/${CONTAINER_NAME}
 else
     while true; do
+        echo "passive worker starting"
         DISPLAY="" python -m dataanalysis.caches.queue $DDA_QUEUE 2>&1
         echo "worker dead: restarting"
     done | tee -a /var/log/containers/${CONTAINER_NAME}

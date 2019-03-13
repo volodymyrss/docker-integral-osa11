@@ -155,7 +155,7 @@ RUN pip install git+ssh://git@github.com/volodymyrss/data-analysis.git@$dda_revi
 
 
 # dda service
-ENV EXPORT_SERVICE_PORT 5967
+ENV EXPORT_SERVICE_PORT 5691
 ENV EXPORT_SERVICE_HOST 0.0.0.0
 EXPOSE $EXPORT_SERVICE_PORT
 
