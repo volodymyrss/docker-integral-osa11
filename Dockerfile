@@ -78,7 +78,6 @@ ADD osa_init.sh /osa_init.sh
 
 # additional software for OSA
 
-RUN mkdir -pv /home/integral/.ssh; ssh-keyscan -t rsa github.com >> /home/integral/.ssh/known_hosts
 
 #ADD common_integral_software_init.sh /common_integral_software_init.sh
 
@@ -100,13 +99,14 @@ USER integral
 
 
 # custom private python
+RUN mkdir -pv /home/integral/.ssh; ssh-keyscan -t rsa github.com >> /home/integral/.ssh/known_hosts
 ADD deploy-keys deploy-keys
 ADD keys/known_hosts /home/integral/.ssh/known_hosts
 ADD keys/integral-containers-key /home/integral/.ssh/id_rsa
 ADD keys/integral-containers-key.pub /home/integral/.ssh/id_rsa.pub
 ADD keys keys
 
-
+# duplication?
 USER root
 RUN mkdir -pv .ssh && chown -R integral:integral deploy-keys .ssh
 #RUN cp keys/id_rsa-sdsc /home/integral/.ssh/id_rsa && cp keys/id_rsa-sdsc.pub /home/integral/.ssh/id_rsa.pub && cp keys/known_hosts /home/integral/.ssh/
@@ -119,34 +119,75 @@ RUN echo "integral ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 USER integral
 
 
-RUN pip install --upgrade pip  && \
-    pip install pyyaml luigi pandas jupyter pytest nose sshuttle && \
-    pip install git+ssh://git@github.com/volodymyrss/pilton.git@504e245 -U && \
-    pip install git+ssh://git@github.com/volodymyrss/heaspa.git -U && \
-    pip install git+ssh://git@github.com/volodymyrss/headlessplot.git && \
-    pip install git+ssh://git@github.com/volodymyrss/dlogging.git@6df5b37 --upgrade && \
-    pip install git+ssh://git@github.com/volodymyrss/restddosaworker.git@04cd7f1 && \
-    pip install git+ssh://git@github.com/volodymyrss/dda-sdsc.git@29b0bdf && \
-    pip install git+ssh://git@github.com/volodymyrss/data-analysis.git@44266de --upgrade 
 
 
 
-ADD entrypoint.sh /home/integral/entrypoint.sh
-
-ADD secret-ddosa-server /home/integral/.secret-ddosa-server
-
-RUN rm -rf /home/integral/pfiles
-ENTRYPOINT /home/integral/entrypoint.sh
+#ADD secret-ddosa-server /home/integral/.secret-ddosa-server
 
 
+
+# dda service
 ENV EXPORT_SERVICE_PORT 5967
 ENV EXPORT_SERVICE_HOST 0.0.0.0
 EXPOSE $EXPORT_SERVICE_PORT
 
+
+# jupyter
 RUN mkdir -p /home/integral/.jupyter/
 ADD jupyter_notebook_config.json /home/integral/.jupyter/jupyter_notebook_config.json
 EXPOSE 8888
 
 
-    
 
+ENV EXPORT_SERVICE_PORT 5691
+ENV EXPORT_SERVICE_HOST 0.0.0.0
+EXPOSE ${EXPORT_SERVICE_PORT}
+
+# additional software
+
+RUN pip install --upgrade pip  && \
+    pip install pyyaml luigi pandas jupyter pytest nose sshuttle && \
+    pip install git+ssh://git@github.com/volodymyrss/pilton.git@504e245 -U && \
+    pip install git+ssh://git@github.com/volodymyrss/heaspa.git -U && \
+    pip install git+ssh://git@github.com/volodymyrss/headlessplot.git && \
+    pip install git+ssh://git@github.com/volodymyrss/restddosaworker.git@04cd7f1 && \
+    pip install git+ssh://git@github.com/volodymyrss/dda-ddosadm.git -U && \
+    pip install git+ssh://git@github.com/volodymyrss/dda-ddosa.git@7c45922 -U && \
+    pip install git+ssh://git@github.com/volodymyrss/dlogging.git@6df5b37 --upgrade
+RUN pip install pyyaml
+RUN pip install logzio-python-handler
+RUN pip install numpy pandas  --upgrade
+RUN pip install python-logstash logstash_formatter
+RUN pip install logstash_formatter
+RUN pip install requests-unixsocket 
+RUN pip install pymysql
+RUN pip install peewee
+RUN git clone https://github.com/mtorromeo/mattersend.git && cd mattersend && pip install pyfakefs && pip install . 
+RUN pip install git+ssh://git@github.com/volodymyrss/restddosaworker.git@f8d5353  --upgrade
+
+#ENV DDA_QUEUE /data/ddcache/queue
+
+
+
+#ADD get_docker_name.py /home/integral/get_docker_name.py
+#ADD netrc-integral-containers /home/integral/.netrc
+
+ARG dda_revision
+RUN pip install git+ssh://git@github.com/volodymyrss/data-analysis.git@$dda_revision --upgrade
+
+# access group
+USER root
+RUN groupadd data -g 4915
+RUN usermod integral -G data -a
+USER integral
+
+#USER root
+#RUN su - -c 'yum install netstat lsof -y'
+#USER integral
+
+ADD choose_proxy.sh /home/integral/choose_proxy.sh
+
+RUN rm -rf /home/integral/pfiles
+
+ADD entrypoint.sh /home/integral/entrypoint.sh
+ENTRYPOINT /home/integral/entrypoint.sh
