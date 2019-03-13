@@ -146,7 +146,7 @@ RUN pip install pyyaml luigi pandas jupyter pytest nose sshuttle && \
     pip install git+ssh://git@github.com/volodymyrss/dda-ddosadm.git -U && \
     pip install git+ssh://git@github.com/volodymyrss/dda-ddosa.git@7c45922 -U && \
     pip install git+ssh://git@github.com/volodymyrss/dlogging.git@6df5b37 --upgrade
-RUN pip install git+ssh://git@github.com/volodymyrss/restddosaworker.git@a1334ed --upgrade
+RUN pip install git+ssh://git@github.com/volodymyrss/restddosaworker.git@f19ccb --upgrade
 RUN pip install git+ssh://git@github.com/volodymyrss/dqueue
 RUN git clone https://github.com/mtorromeo/mattersend.git && cd mattersend && pip install pyfakefs && pip install . 
 
