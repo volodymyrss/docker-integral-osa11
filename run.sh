@@ -14,4 +14,5 @@ docker run \
     -v $SCRATCH:/scratch \
     -v $LOGS:/var/log/containers \
     -e DDA_QUEUE=queue-osa11 \
+    -e WORKER_MODE=${WORKER_MODE:-interface} \
     $CONTAINER_NAME
