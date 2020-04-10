@@ -1,4 +1,4 @@
-FROM centos
+FROM centos:7 as builder
 
 RUN yum -y install epel-release
 RUN yum -y update
@@ -74,6 +74,7 @@ RUN cd / && \
 #    mv /osa11 /osa
 
 ARG OSA_VERSION
+ARG OSA_PLATFORM=CentOS_7.7.1908_x86_64
 
 RUN cd / && \
     if [ ${OSA_VERSION} == "10.2" ]; then \
@@ -82,9 +83,9 @@ RUN cd / && \
         rm -fv osa10.2-bin-linux64.tar.gz && \
         mv osa10.2 osa; \
     else \
-        wget https://www.isdc.unige.ch/~savchenk/gitlab-ci/integral/build/osa-build-binary-tarball/CentOS_7.5.1804_x86_64/${OSA_VERSION}/build-latest/osa-${OSA_VERSION}-CentOS_7.5.1804_x86_64.tar.gz && \
-        tar xvzf osa-${OSA_VERSION}-CentOS_7.5.1804_x86_64.tar.gz && \
-        rm -fv osa-${OSA_VERSION}-CentOS_7.5.1804_x86_64.tar.gz && \
+        wget https://www.isdc.unige.ch/~savchenk/gitlab-ci/integral/build/osa-build-binary-tarball/${OSA_PLATFORM}/${OSA_VERSION}/build-latest/osa-${OSA_VERSION}-${OSA_PLATFORM}.tar.gz && \
+        tar xvzf osa-${OSA_VERSION}-${OSA_PLATFORM}.tar.gz && \
+        rm -fv osa-${OSA_VERSION}-${OSA_PLATFORM}.tar.gz && \
         mv osa11 osa; \
     fi
 
@@ -104,29 +105,6 @@ RUN mkdir -pv /host_var; chown integral:integral /host_var &&  \
 USER integral
 
 
-# custom private python
-RUN mkdir -pv /home/integral/.ssh; ssh-keyscan -t rsa github.com >> /home/integral/.ssh/known_hosts
-ADD deploy-keys deploy-keys
-ADD keys/known_hosts /home/integral/.ssh/known_hosts
-ADD keys/integral-containers-key /home/integral/.ssh/id_rsa
-ADD keys/integral-containers-key.pub /home/integral/.ssh/id_rsa.pub
-ADD keys keys
-
-# duplication?
-USER root
-RUN mkdir -pv .ssh && chown -R integral:integral deploy-keys .ssh
-RUN cp keys/id_rsa-sdsc /home/integral/.ssh/id_rsa && cp keys/id_rsa-sdsc.pub /home/integral/.ssh/id_rsa.pub && cp keys/known_hosts /home/integral/.ssh/
-RUN cp keys/id_rsa-osa11 /home/integral/.ssh/id_rsa && cp keys/id_rsa-osa11.pub /home/integral/.ssh/id_rsa.pub && cp keys/known_hosts /home/integral/.ssh/
-RUN chown integral:integral -Rv keys /home/integral/.ssh
-RUN chown -R integral:integral /home/integral/.ssh/ &&  \
-    chmod 644 /home/integral/.ssh/id_rsa.pub &&  \
-    chmod 400 /home/integral/.ssh/id_rsa
-RUN echo "integral ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-USER integral
-
-
-
-
 # additional software
 
 RUN pip install --upgrade pip  
@@ -139,21 +117,23 @@ RUN pip install requests-unixsocket
 RUN pip install pymysql
 RUN pip install peewee
 RUN pip install ruamel.yaml
-RUN pip install pyyaml luigi pandas jupyter pytest nose sshuttle && \
-    pip install git+ssh://git@github.com/volodymyrss/pilton.git@504e245 -U && \
-    pip install git+ssh://git@github.com/volodymyrss/heaspa.git -U && \
-    pip install git+ssh://git@github.com/volodymyrss/headlessplot.git && \
-    pip install git+ssh://git@github.com/volodymyrss/dda-ddosadm.git -U && \
-    pip install git+ssh://git@github.com/volodymyrss/dda-ddosa.git@7c45922 -U && \
-    pip install git+ssh://git@github.com/volodymyrss/dlogging.git@6df5b37 --upgrade
-RUN pip install git+ssh://git@github.com/volodymyrss/dqueue
+RUN pip install pyyaml luigi pandas jupyter pytest nose sshuttle 
+RUN pip install git+https://github.com/volodymyrss/pilton.git@504e245 -U && \
+    pip install git+https://github.com/volodymyrss/heaspa.git -U && \
+    pip install git+https://github.com/volodymyrss/headlessplot.git && \
+    pip install git+https://github.com/volodymyrss/dda-ddosadm.git -U && \
+    pip install git+https://github.com/volodymyrss/dda-ddosa.git@7c45922 -U && \
+    pip install git+https://github.com/volodymyrss/dlogging.git@6df5b37 --upgrade
+RUN pip install git+https://github.com/volodymyrss/dqueue
 RUN git clone https://github.com/mtorromeo/mattersend.git && cd mattersend && pip install pyfakefs && pip install . 
-RUN pip install git+ssh://git@github.com/volodymyrss/restddosaworker.git@01360d5 --upgrade
+
+ADD restddosaworker /restddosaworker
+RUN pip install /restddosaworker
 
 
 ARG dda_revision
-RUN pip install git+ssh://git@github.com/volodymyrss/data-analysis.git@stable --upgrade
-#RUN pip install git+ssh://git@github.com/volodymyrss/data-analysis.git@$dda_revision --upgrade
+#RUN pip install git+ssh://git@github.com/volodymyrss/data-analysis.git@stable --upgrade
+RUN pip install git+https://github.com/volodymyrss/data-analysis.git@$dda_revision --upgrade
 
 
 # dda service
@@ -188,5 +168,12 @@ USER root
 RUN echo "export OSA_VERSION=$OSA_VERSION" >> /osa_init.sh
 RUN echo "export CONTAINER_COMMIT=$CONTAINER_COMMIT" >> /init.sh
 USER integral
+
+#FROM scratch
+#COPY --from=builder / /
+RUN pip install pyyaml==3.12
+ENTRYPOINT /home/integral/entrypoint.sh
+
+
 
 #ENV DDA_QUEUE /data/ddcache/queue
