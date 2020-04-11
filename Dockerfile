@@ -116,8 +116,7 @@ RUN pip install logstash_formatter
 RUN pip install requests-unixsocket 
 RUN pip install pymysql
 RUN pip install peewee
-RUN pip install ruamel.yaml
-RUN pip install pyyaml luigi pandas jupyter pytest nose sshuttle 
+RUN pip install luigi pandas jupyter pytest nose sshuttle 
 RUN pip install git+https://github.com/volodymyrss/pilton.git@504e245 -U && \
     pip install git+https://github.com/volodymyrss/heaspa.git -U && \
     pip install git+https://github.com/volodymyrss/headlessplot.git && \
@@ -175,5 +174,7 @@ RUN pip install pyyaml==3.12
 ENTRYPOINT /home/integral/entrypoint.sh
 
 
+RUN cat /osa_init.sh
+RUN export HOME=/tmp; id; source /osa_init.sh; python -c 'import yaml, collections; yaml.load(yaml.dump(collections.OrderedDict()))'
 
 #ENV DDA_QUEUE /data/ddcache/queue
