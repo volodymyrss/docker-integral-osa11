@@ -1,0 +1,25 @@
+logzio-python-handler
+numpy
+pandas
+python-logstash
+logstash_formatter
+requests-unixsocket 
+pymysql
+peewee
+#luigi
+pandas
+jupyter
+pytest
+nose
+sshuttle 
+pilton
+headlessplot
+#git+https://github.com/volodymyrss/dda-ddosadm.git
+#git+https://github.com/volodymyrss/dda-ddosa.git@7c45922 
+#git+https://github.com/volodymyrss/dlogging.git@6df5b37 --upgrade
+dqueue
+#clone https://github.com/mtorromeo/mattersend.git && cd mattersend && pip install pyfakefs && pip install . 
+
+data-analysis
+
+pyyaml==3.12
