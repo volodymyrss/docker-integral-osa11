@@ -175,6 +175,6 @@ ENTRYPOINT /home/integral/entrypoint.sh
 
 
 RUN cat /osa_init.sh
-RUN export HOME=/tmp; id; source /osa_init.sh; python -c 'import yaml, collections; yaml.load(yaml.dump(collections.OrderedDict()))'
+#RUN export HOME=/tmp; id; source /osa_init.sh; python -c 'import yaml, collections; yaml.load(yaml.dump(collections.OrderedDict()))'
 
 #ENV DDA_QUEUE /data/ddcache/queue
