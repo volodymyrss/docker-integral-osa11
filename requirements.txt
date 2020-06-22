@@ -1,3 +1,4 @@
+wheel
 logzio-python-handler
 numpy
 pandas
