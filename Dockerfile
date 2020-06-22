@@ -1,4 +1,4 @@
-FROM centos:6
+FROM centos:7 as builder
 
 RUN yum -y install epel-release
 RUN yum -y update
@@ -11,17 +11,24 @@ RUN yum -y install gcc git curl make zlib-devel bzip2 bzip2-devel \
                    libXt-devel \
                    gcc gcc-c++ gcc-gfortran \
                    perl-ExtUtils-MakeMaker \
-                   net-tools strace sshfs sudo iptables
+                   net-tools strace sshfs sudo iptables \
+                   git cmake gcc-c++ gcc binutils libX11-devel libXpm-devel \
+                   libXft-devel libXext-devel gcc-gfortran openssl-devel pcre-devel \
+                   mesa-libGL-devel mesa-libGLU-devel glew-devel ftgl-devel mysql-devel \
+                   fftw-devel cfitsio-devel graphviz-devel avahi-compat-libdns_sd-devel \
+                   libldap-dev python-devel libxml2-devel gsl-static \
+                   compat-gcc-44 compat-gcc-44-c++ compat-gcc-44-c++.gfortran \
+                   colordiff
+
+RUN cp -fv /usr/bin/gfortran /usr/bin/g95
 
 RUN ln -s /usr/lib64/libpcre.so.1 /usr/lib64/libpcre.so.0
-RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.rpm.sh | bash && yum -y install git-lfs
+#RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.rpm.sh | bash && yum -y install git-lfs
 
 ARG uid
 RUN groupadd -r integral -g $uid && useradd -u $uid -r -g integral integral && \
     mkdir /home/integral /data && \
     chown -R integral:integral /home/integral /data
-
-
 USER integral
 
 ## pyenv
@@ -31,171 +38,143 @@ WORKDIR /home/integral
 RUN git clone git://github.com/yyuu/pyenv.git .pyenv
 
 ENV HOME  /home/integral
+ENV PYENV_ROOT $HOME/.pyenv
+ENV PATH $PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH
+
+RUN export PYTHON_CONFIGURE_OPTS="--enable-shared" && pyenv install 2.7.12
+RUN pyenv global 2.7.12
+RUN pyenv rehash
 
 
+# basic
+RUN pip install pip --upgrade
+RUN pip install future
+RUN pip install numpy scipy astropy matplotlib
+RUN pip install termcolor
 
-## build heasoft
-
-
-## keys
-
-
-#RUN ls -lotra deploy-keys; chmod 700 deploy-keys; chmod 600 deploy-keys/*; \
-#    git lfs install && \
-#    ssh-agent bash -c 'ssh-add deploy-keys/deploy-osa-package-reduced_id_rsa; ls -lotra deploy-keys/; git clone git@github.com:volodymyrss/osa-package-reduced.git' && \
-#    cd osa-package-reduced && git checkout dc511db && ls -ltroah && sh install.sh && cp osa10.2_init.sh ../ &&\
-#    cd ../ && rm -rf osa-package-reduced
-
-
-
-## pipeline and scripts
-#
-#ADD update_packages.sh /home/integral/
-#RUN sh update_packages.sh
-
-#ADD run.sh /home/integral/run.sh
-
-ADD deploy-keys deploy-keys
-ADD keys/known_hosts /home/integral/.ssh/known_hosts
-ADD keys/integral-containers-key /home/integral/.ssh/id_rsa
-ADD keys/integral-containers-key.pub /home/integral/.ssh/id_rsa.pub
-ADD keys keys
-
-#RUN ssh-keyscan -t rsa github.com >> /home/integral/.ssh/known_hosts
-
-
+# heasoft
 USER root
-RUN mkdir -pv .ssh && chown -R integral:integral deploy-keys .ssh
-#RUN cp keys/id_rsa-sdsc /home/integral/.ssh/id_rsa && cp keys/id_rsa-sdsc.pub /home/integral/.ssh/id_rsa.pub && cp keys/known_hosts /home/integral/.ssh/
-RUN cp keys/id_rsa-osa11 /home/integral/.ssh/id_rsa && cp keys/id_rsa-osa11.pub /home/integral/.ssh/id_rsa.pub && cp keys/known_hosts /home/integral/.ssh/
-RUN chown integral:integral -Rv keys /home/integral/.ssh
-RUN chown -R integral:integral /home/integral/.ssh/ &&  \
-    chmod 644 /home/integral/.ssh/id_rsa.pub &&  \
-    chmod 400 /home/integral/.ssh/id_rsa
-RUN echo "integral ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+RUN wget https://www.isdc.unige.ch/~savchenk/gitlab-ci/savchenk/osa-build-heasoft-binary-tarball/CentOS_7.5.1804_x86_64/heasoft-CentOS_7.5.1804_x86_64.tar.gz && \
+    (cd /; tar xvzf $OLDPWD/heasoft-CentOS_7.5.1804_x86_64.tar.gz) && \
+    rm -fv heasoft-CentOS_7.5.1804_x86_64.tar.gz
+
+ADD heasoft_init.sh /heasoft_init.sh
+
+# root
+RUN cd / && \ 
+    wget https://root.cern.ch/download/root_v5.34.26.Linux-slc6_amd64-gcc4.4.tar.gz && \
+    tar xvzf root_v5.34.26.Linux-slc6_amd64-gcc4.4.tar.gz && \
+    rm -f root_v5.34.26.Linux-slc6_amd64-gcc4.4.tar.gz 
+
+# osa
+#USER root
+#RUN wget https://www.isdc.unige.ch/~savchenk/gitlab-ci/integral/build/osa-build-binary-tarball/CentOS_7.5.1804_x86_64/latest/build-latest/osa-11.0-3-g78d73880-20190124-105932-CentOS_7.5.1804_x86_64-tiny.tar.gz && \
+#    cd / && tar xvzf $OLDPWD/osa-11.0-3-g78d73880-20190124-105932-CentOS_7.5.1804_x86_64-tiny.tar.gz && \
+#    rm -fv osa-11.0-3-g78d73880-20190124-105932-CentOS_7.5.1804_x86_64-tiny.tar.gz && \
+#    mv /osa11 /osa
+
+ARG OSA_VERSION
+ARG OSA_PLATFORM=CentOS_7.7.1908_x86_64
+
+RUN cd / && \
+    if [ ${OSA_VERSION} == "10.2" ]; then \
+        wget https://www.isdc.unige.ch/integral/download/osa/sw/10.2/osa10.2-bin-linux64.tar.gz && \
+        tar xvzf osa10.2-bin-linux64.tar.gz && \
+        rm -fv osa10.2-bin-linux64.tar.gz && \
+        mv osa10.2 osa; \
+    else \
+        wget https://www.isdc.unige.ch/~savchenk/gitlab-ci/integral/build/osa-build-binary-tarball/${OSA_PLATFORM}/${OSA_VERSION}/build-latest/osa-${OSA_VERSION}-${OSA_PLATFORM}.tar.gz && \
+        tar xvzf osa-${OSA_VERSION}-${OSA_PLATFORM}.tar.gz && \
+        rm -fv osa-${OSA_VERSION}-${OSA_PLATFORM}.tar.gz && \
+        mv osa11 osa; \
+    fi
+
+
 USER integral
 
-
-
+ADD osa_init.sh /osa_init.sh
 
 # prep OSA
 
 USER root
 RUN mkdir -pv /host_var; chown integral:integral /host_var &&  \
     mkdir -pv /data/rep_base_prod; chown integral:integral /data/rep_base_prod && \
-    mkdir -pv /data/ddcache; chown integral:integral /data/ddcache 
+    mkdir -pv /data/ddcache; chown integral:integral /data/ddcache  && \
+    mkdir -pv /data/rep_base_prod/aux /data/ic_tree_current/ic /data/ic_tree_current/idx /data/resources /data/rep_base_prod/cat /data/rep_base_prod/ic /data/rep_base_prod/idx && \
+    chown -R integral:integral /data/rep_base_prod/aux /data/ic_tree_current/ic /data/ic_tree_current/idx /data/resources /data/rep_base_prod/cat /data/rep_base_prod/ic /data/rep_base_prod/idx
 USER integral
+
 
 # additional software
 
+RUN pip install --upgrade pip  
+RUN pip install pyyaml
+RUN pip install logzio-python-handler
+RUN pip install numpy pandas  --upgrade
+RUN pip install python-logstash logstash_formatter
+RUN pip install logstash_formatter
+RUN pip install requests-unixsocket 
+RUN pip install pymysql
+RUN pip install peewee
+RUN pip install luigi pandas jupyter pytest nose sshuttle 
+RUN pip install git+https://github.com/volodymyrss/pilton.git@504e245 -U && \
+    pip install git+https://github.com/volodymyrss/heaspa.git -U && \
+    pip install git+https://github.com/volodymyrss/headlessplot.git && \
+    pip install git+https://github.com/volodymyrss/dda-ddosadm.git -U && \
+    pip install git+https://github.com/volodymyrss/dda-ddosa.git@7c45922 -U && \
+    pip install git+https://github.com/volodymyrss/dlogging.git@6df5b37 --upgrade
+RUN pip install git+https://github.com/volodymyrss/dqueue
+RUN git clone https://github.com/mtorromeo/mattersend.git && cd mattersend && pip install pyfakefs && pip install . 
 
-ADD osa10.2_preparedata.sh .
-
-ADD secret-ddosa-server /home/integral/.secret-ddosa-server
-
-ADD entrypoint.sh /home/integral/entrypoint.sh
-
-RUN rm -rf /home/integral/pfiles
-ENTRYPOINT /home/integral/entrypoint.sh
+ADD restddosaworker /restddosaworker
+RUN pip install /restddosaworker
 
 
-ENV EXPORT_SERVICE_PORT 5967
+ARG dda_revision
+#RUN pip install git+ssh://git@github.com/volodymyrss/data-analysis.git@stable --upgrade
+RUN pip install git+https://github.com/volodymyrss/data-analysis.git@$dda_revision --upgrade
+
+
+# dda service
+ENV EXPORT_SERVICE_PORT 5691
 ENV EXPORT_SERVICE_HOST 0.0.0.0
 EXPOSE $EXPORT_SERVICE_PORT
 
+
+# jupyter
 RUN mkdir -p /home/integral/.jupyter/
-ADD jupyter_notebook_config.json /home/integral/.jupyter/jupyter_notebook_config.json
 EXPOSE 8888
 
-#RUN ssh-agent bash -c 'ssh-add deploy-keys/deploy-osa-package-reduced_id_rsa; ls -lotra deploy-keys/; git clone git@github.com:volodymyrss/osa-package-reduced.git -b isgrijemx' && \
-#    cd osa-package-reduced && git checkout isgrijemx && ls -ltroah && sh install.sh;  cp osa10.2_init.sh ../ &&\
-#    cd ../ && rm -rf osa-package-reduced
 
-RUN sudo su - -c 'yum install -y git cmake gcc-c++ gcc binutils libX11-devel libXpm-devel libXft-devel libXext-devel gcc-gfortran openssl-devel pcre-devel mesa-libGL-devel mesa-libGLU-devel glew-devel ftgl-devel mysql-devel fftw-devel cfitsio-devel graphviz-devel avahi-compat-libdns_sd-devel libldap-dev python-devel libxml2-devel gsl-static'
-
-RUN wget https://root.cern.ch/download/root_v5.34.26.Linux-slc6_amd64-gcc4.4.tar.gz && \
-    tar xvzf root_v5.34.26.Linux-slc6_amd64-gcc4.4.tar.gz && \
-    rm -f root_v5.34.26.Linux-slc6_amd64-gcc4.4.tar.gz 
-
-
-#RUN wget https://root.cern.ch/download/root_v5.34.26.Linux-slc6_amd64-gcc4.8.tar.gz && \
-#    tar xvzf root_v5.34.26.Linux-slc6_amd64-gcc4.8.tar.gz
-
-#RUN mkdir -p /home/integral/ && \
-#    cd /home/integral/ && \
-#    wget https://root.cern.ch/download/root_v5.34.34.source.tar.gz && \
-#    tar xvzf root_v5.34.34.source.tar.gz  && \
-
-#RUN mkdir -p /home/integral/ && \
-#    cd /home/integral/ && \
-#    wget https://root.cern.ch/download/root_v5.34.34.source.tar.gz && \
-#    tar xvzf root_v5.34.34.source.tar.gz  && \
-#    cd root && \
-#    ./configure  && \
-#    make
-    
-
-
-#ADD g95-x86_64-64-linux.tgz g95-x86_64-64-linux
+# access group
+ARG private_group=""
+USER root
+RUN  [ "$private_group" != "" ] && ( groupadd data -g 4915; usermod integral -G data -a) || echo 'not adding private group!'
+USER integral
 
 #USER root
-#RUN cp g95-x86_64-64-linux/g95-install/bin/x86_64-unknown-linux-gnu-g95 /usr/bin/f95
+#RUN su - -c 'yum install netstat lsof -y'
 #USER integral
 
-RUN sudo su - -c 'yum install -y  gcc gcc-c++ gcc-gfortran'
-RUN gcc --version
-RUN sudo su - -c 'cp -fv /usr/bin/gfortran /usr/bin/g95'
+#ADD choose_proxy.sh /home/integral/choose_proxy.sh
 
-ADD install_osa102.sh install_osa102.sh
-RUN sh install_osa102.sh
-ADD osa10.2_init.sh osa10.2_init.sh
+#RUN rm -rf /home/integral/pfiles
 
-#ADD install_common_integral_software_ii.sh install_common_integral_software_ii.sh
-#RUN bash install_common_integral_software_ii.sh
-
-RUN git clone git@github.com:volodymyrss/osa-builder.git && \
-    cd osa-builder
-
-RUN sudo su - -c 'yum install -y colordiff'
-
-ADD install_osa11_update.sh install_osa11_update.sh
-RUN sh install_osa11_update.sh dal3ibis
-RUN sh install_osa11_update.sh '^ibis_.*'
-RUN sh install_osa11_update.sh '^ii_.*'
-RUN sh install_osa11_update.sh '^spe_pick'
-RUN sh install_osa11_update.sh '^barycent'
-RUN sh install_osa11_update.sh '^j_.*'
-#rmf-templates
-#templates-all
-#test-ibis_isgr_energy
-#test-ii_shadow_build
-#test-jemx_image
-
-
-
+ADD entrypoint.sh /home/integral/entrypoint.sh
+ENTRYPOINT /home/integral/entrypoint.sh
 
 USER root
-RUN mkdir -pv /data/rep_base_prod/aux /data/ic_tree_current/ic /data/ic_tree_current/idx /data/resources /data/rep_base_prod/cat /data/rep_base_prod/ic /data/rep_base_prod/idx && \
-    chown -R integral:integral /data/rep_base_prod/aux /data/ic_tree_current/ic /data/ic_tree_current/idx /data/resources /data/rep_base_prod/cat /data/rep_base_prod/ic /data/rep_base_prod/idx
-USER integral
-    
-RUN git clone git@github.com:volodymyrss/osa-templates-all.git && \
-    source /home/integral/osa10.2_init.sh && \
-    cp -rf osa-templates-all/* $CFITSIO_INCLUDE_FILES/
-
-ADD init.sh init.sh
-
-USER root
-RUN su - -c 'yum install -y redhat-lsb'
+RUN echo "export OSA_VERSION=$OSA_VERSION" >> /osa_init.sh
+RUN echo "export CONTAINER_COMMIT=$CONTAINER_COMMIT" >> /init.sh
 USER integral
 
-RUN cp -rv /home/integral/root /home/integral/osa/
+#FROM scratch
+#COPY --from=builder / /
+RUN pip install pyyaml==3.12
+ENTRYPOINT /home/integral/entrypoint.sh
 
-RUN platform=`lsb_release -is`_`lsb_release -sr`_`uname -i` && \
-    cd /home/integral/ && \
-    mv osa osa11 && \
-    package=osa11-${platform}.tar.gz && \
-    tar cvzf /home/integral/$package osa11 && \
-    ls -lotr && \
-    echo $package > /home/integral/package_list.txt
 
+RUN cat /osa_init.sh
+#RUN export HOME=/tmp; id; source /osa_init.sh; python -c 'import yaml, collections; yaml.load(yaml.dump(collections.OrderedDict()))'
+
+#ENV DDA_QUEUE /data/ddcache/queue
