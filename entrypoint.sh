@@ -3,9 +3,9 @@
 export WORKDIR=/scratch/$HOSTNAME/
 mkdir -pv $WORKDIR/tmp-home
 
-export HOME=$WORKDIR/tmp-home
-source /osa_init.sh
-source /heasoft_init.sh
+export HOME_OVERRRIDE=$WORKDIR/tmp-home
+
+source /init.sh
 #sh setup_curlftpfs.sh
 export HOME=/home/integral
 
@@ -43,14 +43,16 @@ if [ "$WORKER_MODE" == "interface" ]; then
 #resttimesystem.sh > /host_var/log/resttimesystem.log 2>&1
     while true; do
         echo "interface worker starting"
-        DISPLAY="" python -m ddaworker.service 2>&1 
+        DISPLAY="" gunicorn -b 0.0.0.0:8000 ddaworker.service:app 2>&1 
         echo "worker dead: restarting"
+        sleep 1
     done | tee -a /var/log/containers/${CONTAINER_NAME}
 else
     while true; do
         echo "passive worker starting"
         DISPLAY="" python -m dataanalysis.caches.queue $DDA_QUEUE 2>&1
         echo "worker dead: restarting"
+        sleep 1
     done | tee -a /var/log/containers/${CONTAINER_NAME}
 fi
 
