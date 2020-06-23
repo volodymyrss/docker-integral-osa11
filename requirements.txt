@@ -24,4 +24,4 @@ raven
 mattersend
 flask
 
-pyyaml==3.12
+pyyaml==5.1
