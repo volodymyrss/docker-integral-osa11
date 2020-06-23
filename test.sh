@@ -20,5 +20,10 @@ docker run \
     --name dda-${WORKER_MODE} \
     -p 8100:8000 \
     --rm \
-    -it \
-    $CONTAINER_NAME 
+    $CONTAINER_NAME &
+
+sleep 3
+
+curl http://localhost:8100/healthcheck
+
+docker rm -f dda-${WORKER_MODE}
