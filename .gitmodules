@@ -1,0 +1,3 @@
+[submodule "dda-interface-app"]
+	path = dda-interface-app
+	url = git@github.com:volodymyrss/dda-interface-app.git
