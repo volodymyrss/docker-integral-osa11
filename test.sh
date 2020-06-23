@@ -7,7 +7,10 @@ echo ${WORKER_MODE:=interface}
 
 mkdir -pv $SCRATCH $LOGS
 
+
+docker rm -f $CONTAINER_NAME
 docker run \
+    --net local \
     -v netrc-integral-containers:/home/integral/.netrc \
     -v sentry-key:/home/integral/.sentry-key \
     -v mattermost-hook:/home/integral/.mattermost-hook \
@@ -23,10 +26,11 @@ docker run \
     -e REP_BASE_PROD="/data" \
     --name dda-${WORKER_MODE} \
     -p 8100:8000 \
+    -e DQUEUE_DATABASE_URL="mysql+pool://root:$(cat test-password)@dqueue-mysql/dqueue?max_connections=42&stale_timeout=8001.2" \
     --rm \
     $CONTAINER_NAME &
 
-sleep 1
+sleep 2
 
 
 echo "healthcheck"
