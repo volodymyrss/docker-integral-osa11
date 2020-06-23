@@ -39,7 +39,7 @@ if [ "$WORKER_MODE" == "interface" ]; then
 #resttimesystem.sh > /host_var/log/resttimesystem.log 2>&1
     while true; do
         echo "interface worker starting"
-        DISPLAY="" gunicorn -b 0.0.0.0:8000 ddaworker.service:app 2>&1 
+        DISPLAY="" gunicorn --log-level debug -b 0.0.0.0:8000 ddaworker.service:app 2>&1 
         echo "worker dead: restarting"
         sleep 1
     done | tee -a /var/log/containers/${CONTAINER_NAME}
