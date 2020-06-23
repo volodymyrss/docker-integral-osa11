@@ -24,3 +24,6 @@ run-it:
 run: build
 	sh run.sh $(IMAGE)
 
+test: build
+	sh test.sh $(IMAGE)
+
