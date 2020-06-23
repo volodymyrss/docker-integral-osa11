@@ -18,6 +18,9 @@ docker run \
     -e DDA_QUEUE=queue-osa11 \
     -e WORKER_MODE=${WORKER_MODE} \
     -e DDA_INTERFACE_TOKEN="" \
+    -e CURRENT_IC="/data" \
+    -e INTEGRAL_DATA="/data" \
+    -e REP_BASE_PROD="/data" \
     --name dda-${WORKER_MODE} \
     -p 8100:8000 \
     --rm \
@@ -29,12 +32,9 @@ sleep 1
 echo "healthcheck"
 curl http://localhost:8100/healthcheck
 
-echo "DataAnalysis"
-curl http://remoteintegral:@localhost:8100/api/v1.0/DataAnalysis
-
-
-export DDOSA_WORKER_URL=http://localhost:8100/
+export DDA_INTERFACE_URL=http://localhost:8100/
+export DDA_TOKEN=""
 echo "ii_skyimage"
-dda-client -v ii_skyimage -m git://ddosa -a 'ddosa.ScWData(input_scwid="066500220010.001")'
+dda-client -D -v ii_skyimage -m git://ddosa -a 'ddosa.ScWData(input_scwid="066500220010.001")' 
 
 docker rm -f dda-${WORKER_MODE}
