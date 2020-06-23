@@ -8,6 +8,14 @@ export HOME_OVERRRIDE=$WORKDIR/tmp-home
 source /init.sh
 #sh setup_curlftpfs.sh
 
+# local osa-specific
+
+CURRENT_IC=/data/rep_base_prod
+INTEGRAL_DATA=/data/rep_base_prod
+REP_BASE_PROD=/data/rep_base_prod
+
+# 
+
 set -x
 
 cd $HOME
