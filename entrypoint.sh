@@ -7,9 +7,10 @@ export HOME_OVERRRIDE=$WORKDIR/tmp-home
 
 source /init.sh
 #sh setup_curlftpfs.sh
-export HOME=/home/integral
 
-cd /home/integral
+set -x
+
+cd $HOME
 
 #cp -fvr  /data/resources /data/rep_base_prod/resources
 
@@ -24,11 +25,6 @@ export CONTAINER_NAME=$HOSTNAME
 [ "$MATTERMOST_CHANNEL" == "" ] || (echo "starting backend master $CONTAINER_NAME " | mattersend  -U `cat ~/.mattermost-hook` -c $MATTERMOST_CHANNEL)
 
 #sh choose_proxy.sh
-
-for dev_package in /dev-packages/*; do
-    export PYTHONPATH=$dev_package:$PYTHONPATH
-    echo "adding dev package: $PYTHONPATH"
-done
 
 cd $WORKDIR
 
