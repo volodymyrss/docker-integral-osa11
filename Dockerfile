@@ -21,3 +21,5 @@ RUN echo "export CONTAINER_COMMIT=$CONTAINER_COMMIT" >> /init.sh
 #RUN export HOME=/tmp; id; source /osa_init.sh; python -c 'import yaml, collections; yaml.load(yaml.dump(collections.OrderedDict()))'
 
 #ENV DDA_QUEUE /data/ddcache/queue
+
+ADD etc-passwd /etc/passwd
