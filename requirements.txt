@@ -9,7 +9,7 @@ pandas
 pilton
 headlessplot
 
-dda-queue
+dda-queue==1.1.1
 
 #clone https://github.com/mtorromeo/mattersend.git && cd mattersend && pip install pyfakefs && pip install . 
 
