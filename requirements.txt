@@ -8,10 +8,12 @@ peewee
 pandas
 pilton
 headlessplot
-dqueue
+
+dda-queue
+
 #clone https://github.com/mtorromeo/mattersend.git && cd mattersend && pip install pyfakefs && pip install . 
 
-data-analysis
+data-analysis==1.1.2
 
 
 gunicorn
@@ -25,6 +27,8 @@ mattersend
 flask
 
 #pyyaml==3.12
-pyyaml>=4.2b1
+pyyaml>=5.2
 
 pathlib
+
+bravado

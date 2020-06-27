@@ -15,7 +15,7 @@ docker run \
     -v jupyter_notebook_config.json:/home/integral/.jupyter/jupyter_notebook_config.json \
     -v $SCRATCH:/scratch \
     -v $LOGS:/var/log/containers \
-    -e DDA_QUEUE=queue-osa11 \
+    -e DDA_QUEUE=${DDA_QUEUE:-queue-osa11} \
     -e WORKER_MODE=${WORKER_MODE} \
     --name dda-${WORKER_MODE} \
     -p 8100:8000 \

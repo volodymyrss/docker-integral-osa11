@@ -27,3 +27,9 @@ run: build
 test: build
 	sh test.sh $(IMAGE)
 
+singularity:
+	echo "will do!"
+
+run-worker: build
+	WORKER_MODE=passive DDA_QUEUE="http://in.internal.odahub.io/staging-1-3/dqueue@queue-osa11" sh run.sh $(IMAGE)
+
