@@ -6,8 +6,10 @@ RUN mkdir -pv /osa10.2 && \
     curl -q https://www.isdc.unige.ch/integral/download/osa/sw/10.2/osa10.2-bin-linux64-CentOS7.tar.gz | tar xzf - -C /osa10.2
 
 RUN cat /init.sh >> /init-osa10.2.sh && \
-    echo "export OSA_VERSION=" >> /init-osa10.2.sh && \
-    echo "export CONTAINER_COMMIT=$CONTAINER_COMMIT" >> /init-osa10.2.sh
+    echo "export OSA_VERSION=10.2" >> /init-osa10.2.sh && \
+    echo "export CONTAINER_COMMIT=$CONTAINER_COMMIT" >> /init-osa10.2.sh && \
+    echo "export ISDC_ENV=/osa10.2" >> /init-osa10.2.sh && \
+    echo "source /osa10.2/bin/isdc_init_env.sh" >> /init-osa10.2.sh
 
 
 # additional software
