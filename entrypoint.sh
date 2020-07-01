@@ -5,7 +5,8 @@ mkdir -pv $WORKDIR/tmp-home
 
 export HOME_OVERRRIDE=$WORKDIR/tmp-home
 
-source /init.sh
+source /init-osa10.2.sh
+#source /init.sh
 #sh setup_curlftpfs.sh
 
 # local osa-specific
