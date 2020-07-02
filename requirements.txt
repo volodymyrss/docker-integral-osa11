@@ -13,7 +13,7 @@ dda-queue==1.1.8
 
 #clone https://github.com/mtorromeo/mattersend.git && cd mattersend && pip install pyfakefs && pip install . 
 
-data-analysis==1.1.5
+data-analysis==1.1.6
 
 
 gunicorn
