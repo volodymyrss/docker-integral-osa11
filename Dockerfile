@@ -19,7 +19,7 @@ ENV HOME_OVERRRIDE=/tmp/home
 RUN . /init.sh; pip install --upgrade pip; pip install wheel
 
 ADD requirements.txt /requirements.txt
-RUN . /init.sh; pip install -r /requirements.txt
+RUN . /init.sh; pip install -r /requirements.txt --upgrade
 
 ADD dda-interface-app /dda-interface-app
 RUN . /init.sh; pip install /dda-interface-app
