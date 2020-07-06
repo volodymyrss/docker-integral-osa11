@@ -6,7 +6,7 @@ requests-unixsocket
 pymysql
 peewee
 pandas
-pilton
+pilton==1.0.2
 headlessplot
 
 #dda-queue==aa013fe9f2dc3586e40f0228c0b4823603a730fc
