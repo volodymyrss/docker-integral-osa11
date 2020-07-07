@@ -5,7 +5,7 @@ OSA_VERSION?=$(shell curl https://www.isdc.unige.ch/~savchenk/gitlab-ci/integral
 
 TAG=$(DOCKER_COMMIT)
 #TAG="$(OSA_VERSION)-$(DOCKER_COMMIT)"
-IMAGE="odahub/dda-interface:$(TAG)"
+IMAGE="odahub/dda:$(TAG)"
 
 build: 
 	docker build -t $(IMAGE) --build-arg uid=$(USER_ID) --build-arg OSA_VERSION=$(OSA_VERSION) --build-arg CONTAINER_COMMIT=$(DOCKER_COMMIT) .
